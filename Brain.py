@@ -16,8 +16,8 @@ FRAME_PER_ACTION = 1
 GAMMA = 0.99  # decay rate of past observations
 OBSERVE = 100.  # timesteps to observe before training
 EXPLORE = 200000.  # frames over which to anneal epsilon
-FINAL_EPSILON = 0  # 0.001 # final value of epsilon
-INITIAL_EPSILON = 0  # 0.01 # starting value of epsilon
+FINAL_EPSILON = 0.001  # 0.001 # final value of epsilon
+INITIAL_EPSILON = 0.1  # 0.01 # starting value of epsilon
 REPLAY_MEMORY = 50000  # number of previous transitions to remember
 BATCH_SIZE = 32  # size of minibatch
 UPDATE_TIME = 100
@@ -184,7 +184,9 @@ class BrainDQN:
         action = np.zeros(self.numActions)
         action_index = 0
         if self.timeStep > OBSERVE and self.timeStep % FRAME_PER_ACTION == 0:
-            if random.random() <= self.epsilon:
+            ran = random.random()
+            print 'random: ' + str(ran)
+            if ran <= self.epsilon:
                 action_index = random.randrange(self.numActions)
                 action[action_index] = 1
             else:
