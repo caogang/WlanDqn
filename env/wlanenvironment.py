@@ -3,6 +3,8 @@ import urllib2
 from time import sleep
 import numpy as np
 import json
+import time
+import math
 
 class wlanEnv:
     def __init__(self, remoteControllerAddr, seqLen, timeInterval=0.1):
@@ -12,7 +14,8 @@ class wlanEnv:
         self.timeInverval = timeInterval
         self.threads = []
         self.end = False
-
+        self.timeRewardMax = 10  # FIXME: let it be a parameter
+        self.startTime = None
 
         self.macAddr = '94:65:9c:84:a3:32'
         rssiUrl = 'http://' + self.remoteAddr + "/dqn/rssi/json?mac=" + self.macAddr
@@ -25,6 +28,25 @@ class wlanEnv:
         self.id2ap = dict(zip(xrange(0, self.numAp), dictKey))
         self.obsevation = None
         self.valid = False
+
+    def __calculateTimeReward__(self):
+        if self.startTime is None:
+            self.startTime = time.time()
+        lastTime = time.time() - self.startTime
+        p = 0
+        if lastTime >= 5:
+            p = 1
+        else:
+            lastTime = lastTime * 3 / 5
+            lastTime = lastTime - 3
+            # print lastTime
+            p = (math.exp(lastTime) - math.exp(-lastTime)) / (math.exp(lastTime) + math.exp(-lastTime))
+            p = p + 1
+            # print p
+        return p * self.timeRewardMax
+
+    def cal(self):
+        return self.__calculateTimeReward__()
 
     def __getStatesFromRemote(self, clientHwAddr, timeInterval):
         while not self.end:
@@ -41,7 +63,7 @@ class wlanEnv:
             if rssiDict['state'] and rewardDict['state']:
                 rssiDict.pop('state')
                 rewardDict.pop('state')
-                self.reward = rewardDict['reward']
+                self.reward = rewardDict['reward'] + self.__calculateTimeReward__()
                 if self.obsevation is None :
                     self.obsevation = np.array([rssiDict.values()])
                 elif self.obsevation.shape[0] == self.seqLen:
@@ -76,6 +98,7 @@ class wlanEnv:
         if actionId >= self.numAp:
             return
         self.__handover(self.macAddr, self.id2ap[actionId])
+        self.startTime = time.time()
         return
 
     def getReward(self):
@@ -102,6 +125,22 @@ def curl_keystone(url):
 
 if __name__ == '__main__':
     env = wlanEnv('10.103.12.166:8080', 10, timeInterval=0.1)
+    print env.cal()
+    sleep(1)
+    print env.cal()
+    sleep(1)
+    print env.cal()
+    sleep(1)
+    print env.cal()
+    sleep(1)
+    print env.cal()
+    sleep(1)
+    print env.cal()
+    sleep(1)
+    print env.cal()
+    sleep(1)
+    print env.cal()
+    '''
     env.start()
     sleep(2)
     print env.observe()
@@ -117,4 +156,5 @@ if __name__ == '__main__':
     print env.getDimSpace()
     env.stop()
     sleep(2)
+    '''
     pass
