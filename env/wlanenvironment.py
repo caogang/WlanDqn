@@ -57,6 +57,7 @@ class wlanEnv:
     def __handover(self, clientHwAddr, agentIp):
         handoverUrl = 'http://' + self.remoteAddr + '/dqn/handover/json?mac=' + clientHwAddr + '&&agent=' + agentIp
         print handoverUrl
+        curl_keystone(handoverUrl)
 
     '''
     @:returns
