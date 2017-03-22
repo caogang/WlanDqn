@@ -1,5 +1,6 @@
 from env.wlanenvironment import wlanEnv
 from Brain import BrainDQN
+import time
 
 CONTROLLER_IP = '10.103.12.166:8080'
 BUFFER_LEN = 60
@@ -11,8 +12,11 @@ def main():
 
     numAPs, numActions = env.getDimSpace()
     brain = BrainDQN(numActions, numAPs, BUFFER_LEN)
-    
-    observation0 = env.observe()
+
+    while not env.observe()[0]:
+        time.sleep(0.5)
+
+    observation0 = env.observe()[1]
     brain.setInitState(observation0)
 
     while True:
