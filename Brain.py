@@ -55,8 +55,11 @@ class BrainDQN:
 
         stack.reset()
         outputs, states = stack.unroll(self.seqLen, inputs=data, merge_outputs=True)
-
-        pred = mx.sym.Reshape(outputs, shape=(BATCH_SIZE, -1))
+        
+        if predict :
+            pred = mx.sym.Reshape(outputs, shape=(1, -1))
+        else:
+            pred = mx.sym.Reshape(outputs, shape=(BATCH_SIZE, -1))
 
         fc1 = mx.sym.FullyConnected(data=pred, num_hidden=512, name='fc1')
         relu4 = mx.sym.Activation(data=fc1, act_type='relu', name='relu4')
@@ -91,7 +94,7 @@ class BrainDQN:
         else:
             modQ = mx.mod.Module(symbol=self.sym(predict=True), data_names=('data',), label_names=None, context=ctx)
             batch = 1
-            modQ.bind(data_shapes=[('data', (batch, self.numAps))],
+            modQ.bind(data_shapes=[('data', (batch, self.seqLen, self.numAps))],
                       for_training=isTrain)
 
             modQ.init_params(initializer=mx.init.Xavier(factor_type="in", magnitude=2.34), arg_params=bef_args)
@@ -103,7 +106,7 @@ class BrainDQN:
         # arg={}
         # for k,v in arg_params.iteritems():
         #    arg[k]=arg_params[k].asnumpy()
-
+        # print arg_params, aux_params
         self.target.init_params(initializer=None, arg_params=arg_params, aux_params=aux_params, force_init=True)
 
         # args,auxs=self.target.get_params()
@@ -173,6 +176,7 @@ class BrainDQN:
         self.timeStep += 1
 
     def getAction(self, retIndex=False):
+        print self.currentState
         self.target.forward(mx.io.DataBatch([mx.nd.array(self.currentState, ctx)], []))
         QValue = np.squeeze(self.target.get_outputs()[0].asnumpy())
         action = np.zeros(self.numActions)
