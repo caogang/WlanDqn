@@ -185,11 +185,12 @@ class BrainDQN:
         action_index = 0
         if self.timeStep > OBSERVE and self.timeStep % FRAME_PER_ACTION == 0:
             ran = random.random()
-            print 'random: ' + str(ran)
             if ran <= self.epsilon:
+                print 'random: ' + str(ran)
                 action_index = random.randrange(self.numActions)
                 action[action_index] = 1
             else:
+                print 'Qvalue: ' + str(QValue)
                 action_index = np.argmax(QValue)
                 action[action_index] = 1
         else:
