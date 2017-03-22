@@ -8,6 +8,8 @@ import mxnet as mx
 import numpy as np
 import random
 from collections import deque
+from env.wlanenvironment import wlanEnv
+import time
 
 # Hyper Parameters:
 FRAME_PER_ACTION = 1
@@ -127,7 +129,7 @@ class BrainDQN:
         y_batch = np.zeros((BATCH_SIZE,))
         Qvalue = []
         for i in range(BATCH_SIZE):
-            self.target.forward(mx.io.DataBatch([mx.nd.array(nextState_batch[i], ctx)], []))
+            self.target.forward(mx.io.DataBatch([mx.nd.array(nextState_batch[i].reshape(1, self.seqLen, self.numAps), ctx)], []))
             Qvalue.append(self.target.get_outputs()[0].asnumpy())
         Qvalue_batch = np.squeeze(Qvalue)
         terminal = np.squeeze([data[4] for data in minibatch])
@@ -176,12 +178,12 @@ class BrainDQN:
         self.timeStep += 1
 
     def getAction(self, retIndex=False):
-        print self.currentState
-        self.target.forward(mx.io.DataBatch([mx.nd.array(self.currentState, ctx)], []))
+        # print type(self.currentState)
+        self.target.forward(mx.io.DataBatch([mx.nd.array(self.currentState.reshape(1, self.seqLen, self.numAps), ctx)], []))
         QValue = np.squeeze(self.target.get_outputs()[0].asnumpy())
         action = np.zeros(self.numActions)
         action_index = 0
-        if self.timeStep % FRAME_PER_ACTION == 0:
+        if self.timeStep > OBSERVE and self.timeStep % FRAME_PER_ACTION == 0:
             if random.random() <= self.epsilon:
                 action_index = random.randrange(self.numActions)
                 action[action_index] = 1
@@ -189,7 +191,7 @@ class BrainDQN:
                 action_index = np.argmax(QValue)
                 action[action_index] = 1
         else:
-            action[0] = 1  # do nothing
+            action[self.numActions-1] = 1  # do nothing
 
         # change episilon
         if self.epsilon > FINAL_EPSILON and self.timeStep > OBSERVE:
@@ -198,4 +200,27 @@ class BrainDQN:
         if retIndex:
             return action_index
         else:
+            # print 'type return action :' + str(type(action))
             return action
+
+if __name__ == '__main__':
+    CONTROLLER_IP = '10.103.12.166:8080'
+    BUFFER_LEN = 3
+    ENV_REFRESH_INTERVAL = 0.1
+    env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL)
+    env.start()
+
+    numAPs, numActions = env.getDimSpace()
+    brain = BrainDQN(numActions, numAPs, BUFFER_LEN)
+
+    while not env.observe()[0]:
+        time.sleep(0.5)
+
+    observation0 = env.observe()[1]
+    brain.setInitState(observation0)
+    action = brain.getAction()
+    env.step(action)
+    nextObservation = env.observe()
+    reward = env.getReward()
+    brain.setPerception(nextObservation, action, reward, False)
+    env.stop()

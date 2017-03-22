@@ -72,7 +72,7 @@ class wlanEnv:
         return self.valid, rssi
 
     def step(self, action):
-        actionId = action.index(1)
+        actionId = action.argmax()
         if actionId >= self.numAp:
             return
         self.__handover(self.macAddr, self.id2ap[actionId])
