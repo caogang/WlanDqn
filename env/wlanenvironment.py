@@ -5,9 +5,9 @@ import numpy as np
 import json
 
 class wlanEnv:
-    def __init__(self, remoteControllerAddr, seqLen, timeInterval):
+    def __init__(self, remoteControllerAddr, seqLen, timeInterval=0.1):
         self.remoteAddr = remoteControllerAddr
-        self.numAp = 0 #FIXME: make this work
+        self.numAp = 0
         self.seqLen = seqLen
         self.timeInverval = timeInterval
         self.threads = []
@@ -70,7 +70,8 @@ class wlanEnv:
         rssi = self.obsevation.astype(int)
         return self.valid, rssi
 
-    def step(self, actionId):
+    def step(self, action):
+        actionId = action.index(1)
         if actionId >= self.numAp:
             return
         self.__handover(self.macAddr, self.id2ap[actionId])
