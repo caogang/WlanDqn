@@ -16,7 +16,7 @@ class wlanEnv:
         self.timeRewardMax = 10  # FIXME: let it be a parameter
         self.startTime = None
 
-        self.macAddr = '94:65:9c:84:a3:32'
+        self.macAddr = '68:3e:34:9b:34:05'
         rssiUrl = 'http://' + self.remoteAddr + "/dqn/rssi/json?mac=" + self.macAddr
         rssiDict = curl_keystone(rssiUrl)
         rssiDict = json.loads(rssiDict)
