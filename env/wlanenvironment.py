@@ -34,10 +34,10 @@ class wlanEnv:
             self.startTime = time.time()
         lastTime = time.time() - self.startTime
         p = 0
-        if lastTime >= 5:
+        if lastTime >= 10:
             p = 1
         else:
-            lastTime = lastTime * 3 / 5
+            lastTime = lastTime * 3 / 10
             lastTime = lastTime - 3
             # print lastTime
             p = (math.exp(lastTime) - math.exp(-lastTime)) / (math.exp(lastTime) + math.exp(-lastTime))
@@ -63,6 +63,7 @@ class wlanEnv:
             if rssiDict['state'] and rewardDict['state']:
                 rssiDict.pop('state')
                 rewardDict.pop('state')
+                self.throught = rewardDict['reward']
                 self.reward = rewardDict['reward'] + self.__calculateTimeReward__()
                 if self.obsevation is None :
                     self.obsevation = np.array([rssiDict.values()])
@@ -102,7 +103,7 @@ class wlanEnv:
         return
 
     def getReward(self):
-        return self.valid, self.reward
+        return self.valid, self.reward, self.throught
 
     def start(self):
         t1 = threading.Thread(target=self.__getStatesFromRemote, args=(self.macAddr, self.timeInverval))

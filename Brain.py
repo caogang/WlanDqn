@@ -20,7 +20,7 @@ FINAL_EPSILON = 0.001  # 0.001 # final value of epsilon
 INITIAL_EPSILON = 0.1  # 0.01 # starting value of epsilon
 REPLAY_MEMORY = 50000  # number of previous transitions to remember
 BATCH_SIZE = 32  # size of minibatch
-UPDATE_TIME = 100
+UPDATE_TIME = 10
 
 RNN_NUMS_LAYER = 1
 RNN_NUMS_HIDDEN = 512

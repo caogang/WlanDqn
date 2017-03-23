@@ -11,7 +11,7 @@ def main():
     env.start()
 
     numAPs, numActions = env.getDimSpace()
-    brain = BrainDQN(numActions, numAPs, BUFFER_LEN)
+    brain = BrainDQN(numActions, numAPs, BUFFER_LEN, param_file='saved_networks/network-dqn-8900.params')
 
     while not env.observe()[0]:
         time.sleep(0.5)
@@ -23,8 +23,9 @@ def main():
         print 'action:\n' + str(action.argmax())
         env.step(action)
         nextObservation = env.observe()[1]
-        reward = env.getReward()[1]
+        _, reward, throught = env.getReward()
         print 'reward:\n' + str(reward)
+        print 'throught: ' + str(throught)
         brain.setPerception(nextObservation, action, reward, False)
         time.sleep(0.01)
     
