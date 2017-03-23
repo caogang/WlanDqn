@@ -9,7 +9,7 @@ def main():
     env = wlanEnv(CONTROLLER_IP, BUFFER_LEN)
 
     numAPs, numActions = env.getDimSpace()
-    brain = BrainDQN(numActions, numAPs, BUFFER_LEN, param_file='saved_networks/network-dqn-8900.params')
+    brain = BrainDQN(numActions, numAPs, BUFFER_LEN, param_file='saved_networks/network-dqn.params')
 
     observation0 = env.observe()[1]
     brain.setInitState(observation0)
