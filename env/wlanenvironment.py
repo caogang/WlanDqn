@@ -7,11 +7,10 @@ import time
 import math
 
 class wlanEnv:
-    def __init__(self, remoteControllerAddr, seqLen, timeInterval=0.1):
+    def __init__(self, remoteControllerAddr, seqLen):
         self.remoteAddr = remoteControllerAddr
         self.numAp = 0
         self.seqLen = seqLen
-        self.timeInverval = timeInterval
         self.threads = []
         self.end = False
         self.timeRewardMax = 10  # FIXME: let it be a parameter
@@ -29,7 +28,11 @@ class wlanEnv:
         self.obsevation = None
         self.valid = False
 
-    def __calculateTimeReward__(self):
+        state = self.observe()[0]
+        while state is False:
+            state = self.observe()[0]
+
+    def __calculateTimeReward(self):
         if self.startTime is None:
             self.startTime = time.time()
         lastTime = time.time() - self.startTime
@@ -46,36 +49,7 @@ class wlanEnv:
         return p * self.timeRewardMax
 
     def cal(self):
-        return self.__calculateTimeReward__()
-
-    def __getStatesFromRemote(self, clientHwAddr, timeInterval):
-        while not self.end:
-            rssiUrl = 'http://' + self.remoteAddr + '/dqn/rssi/json?mac=' + clientHwAddr
-            rssiDict = curl_keystone(rssiUrl)
-            rssiDict = json.loads(rssiDict)
-            rewardUrl = 'http://' + self.remoteAddr + '/dqn/reward/json?mac=' + clientHwAddr
-            rewardDict = curl_keystone(rewardUrl)
-            rewardDict = json.loads(rewardDict)
-            # print 'rssi'
-            # print rssiDict
-            # print 'reward'
-            # print rewardDict
-            if rssiDict['state'] and rewardDict['state']:
-                rssiDict.pop('state')
-                rewardDict.pop('state')
-                self.throught = rewardDict['reward']
-                self.reward = rewardDict['reward'] + self.__calculateTimeReward__()
-                if self.obsevation is None :
-                    self.obsevation = np.array([rssiDict.values()])
-                elif self.obsevation.shape[0] == self.seqLen:
-                    obsevation = np.delete(self.obsevation, (0), axis=0)
-                    obsevation = np.append(obsevation, [rssiDict.values()],axis=0)
-                    self.obsevation = obsevation
-                    if not self.valid:
-                        self.valid = True
-                else:
-                    self.obsevation = np.append(self.obsevation, [rssiDict.values()], axis=0)
-            sleep(timeInterval)
+        return self.__calculateTimeReward()
 
     def __handover(self, clientHwAddr, agentIp):
         handoverUrl = 'http://' + self.remoteAddr + '/dqn/handover/json?mac=' + clientHwAddr + '&&agent=' + agentIp
@@ -91,33 +65,46 @@ class wlanEnv:
         return self.numAp, self.numAp + 1
 
     def observe(self):
+        rssiUrl = 'http://' + self.remoteAddr + '/dqn/rssi/json?mac=' + self.macAddr
+        rssiDict = curl_keystone(rssiUrl)
+        rssiDict = json.loads(rssiDict)
+        if rssiDict['state']:
+            rssiDict.pop('state')
+            if self.obsevation is None:
+                self.obsevation = np.array([rssiDict.values()])
+            elif self.obsevation.shape[0] == self.seqLen:
+                obsevation = np.delete(self.obsevation, (0), axis=0)
+                obsevation = np.append(obsevation, [rssiDict.values()], axis=0)
+                self.obsevation = obsevation
+                if not self.valid:
+                    self.valid = True
+            else:
+                self.obsevation = np.append(self.obsevation, [rssiDict.values()], axis=0)
+
         rssi = self.obsevation.astype(int)
         return self.valid, rssi
 
     def step(self, action):
         actionId = action.argmax()
-        if actionId >= self.numAp:
-            return
-        self.__handover(self.macAddr, self.id2ap[actionId])
-        self.startTime = time.time()
-        return
+        if actionId < self.numAp:
+            self.__handover(self.macAddr, self.id2ap[actionId])
+            self.startTime = time.time()
+
+        _, reward, throught = self.getReward()
+        _, nextObservation = self.observe()
+
+        return reward, throught, nextObservation
 
     def getReward(self):
-        return self.valid, self.reward, self.throught
+        rewardUrl = 'http://' + self.remoteAddr + '/dqn/reward/json?mac=' + self.macAddr
+        rewardDict = curl_keystone(rewardUrl)
+        rewardDict = json.loads(rewardDict)
+        rewardDict.pop('state')
+        throught = rewardDict['reward']
+        reward = rewardDict['reward'] + self.__calculateTimeReward()
 
-    def start(self):
-        t1 = threading.Thread(target=self.__getStatesFromRemote, args=(self.macAddr, self.timeInverval))
-        self.threads.append(t1)
-        for t in self.threads:
-            t.setDaemon(True)
-            t.start()
-        print 'start'
+        return self.valid, reward, throught
 
-    def stop(self):
-        self.end = True
-        for t in self.threads:
-            t.join()
-        print 'stop'
 
 def curl_keystone(url):
     req = urllib2.Request(url)
@@ -125,22 +112,24 @@ def curl_keystone(url):
     return response.read()
 
 if __name__ == '__main__':
-    env = wlanEnv('10.103.12.166:8080', 10, timeInterval=0.1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
+    env = wlanEnv('10.103.12.166:8080', 10)
+    print env.observe()
+    print env.step(np.array([0,0,1]))
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
     '''
     env.start()
     sleep(2)

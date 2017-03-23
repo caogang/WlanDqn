@@ -4,30 +4,22 @@ import time
 
 CONTROLLER_IP = '10.103.12.166:8080'
 BUFFER_LEN = 60
-ENV_REFRESH_INTERVAL = 0.01
 
 def main():
-    env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL)
-    env.start()
+    env = wlanEnv(CONTROLLER_IP, BUFFER_LEN)
 
     numAPs, numActions = env.getDimSpace()
     brain = BrainDQN(numActions, numAPs, BUFFER_LEN, param_file='saved_networks/network-dqn-8900.params')
-
-    while not env.observe()[0]:
-        time.sleep(0.5)
 
     observation0 = env.observe()[1]
     brain.setInitState(observation0)
     while True:
         action = brain.getAction()
         print 'action:\n' + str(action.argmax())
-        env.step(action)
-        nextObservation = env.observe()[1]
-        _, reward, throught = env.getReward()
+        reward, throught, nextObservation = env.step(action)
         print 'reward:\n' + str(reward)
         print 'throught: ' + str(throught)
         brain.setPerception(nextObservation, action, reward, False)
-        time.sleep(0.01)
     
 
 
