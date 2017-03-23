@@ -88,10 +88,12 @@ class wlanEnv:
         actionId = action.argmax()
         if actionId < self.numAp:
             self.__handover(self.macAddr, self.id2ap[actionId])
-            self.startTime = time.time()
 
         _, reward, throught = self.getReward()
         _, nextObservation = self.observe()
+
+        if actionId < self.numAp:
+            self.startTime = time.time()
 
         return reward, throught, nextObservation
 
