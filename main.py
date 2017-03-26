@@ -21,13 +21,10 @@ def main():
     while True:
         action = brain.getAction()
         print 'action:\n' + str(action.argmax())
-        env.step(action)
-        nextObservation = env.observe()[1]
-        _, reward, throught = env.getReward()
+        reward, throught, nextObservation = env.step(action)
         print 'reward:\n' + str(reward)
         print 'throught: ' + str(throught)
         brain.setPerception(nextObservation, action, reward, False)
-        time.sleep(0.01)
     
 
 

@@ -29,7 +29,7 @@ class wlanEnv:
         self.obsevation = None
         self.valid = False
 
-    def __calculateTimeReward__(self):
+    def __calculateTimeReward(self):
         if self.startTime is None:
             self.startTime = time.time()
         lastTime = time.time() - self.startTime
@@ -46,7 +46,7 @@ class wlanEnv:
         return p * self.timeRewardMax
 
     def cal(self):
-        return self.__calculateTimeReward__()
+        return self.__calculateTimeReward()
 
     def __getStatesFromRemote(self, clientHwAddr, timeInterval):
         while not self.end:
@@ -64,7 +64,7 @@ class wlanEnv:
                 rssiDict.pop('state')
                 rewardDict.pop('state')
                 self.throught = rewardDict['reward']
-                self.reward = rewardDict['reward'] + self.__calculateTimeReward__()
+                self.reward = rewardDict['reward'] + self.__calculateTimeReward()
                 if self.obsevation is None :
                     self.obsevation = np.array([rssiDict.values()])
                 elif self.obsevation.shape[0] == self.seqLen:
@@ -96,11 +96,14 @@ class wlanEnv:
 
     def step(self, action):
         actionId = action.argmax()
-        if actionId >= self.numAp:
-            return
-        self.__handover(self.macAddr, self.id2ap[actionId])
-        self.startTime = time.time()
-        return
+        if actionId < self.numAp:
+            self.__handover(self.macAddr, self.id2ap[actionId])
+            self.startTime = time.time()
+
+        _, reward, throught = self.getReward()
+        _, nextObservation = self.observe()
+
+        return reward, throught, nextObservation
 
     def getReward(self):
         return self.valid, self.reward, self.throught
