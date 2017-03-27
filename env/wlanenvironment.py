@@ -14,7 +14,7 @@ class wlanEnv:
         self.timeInverval = timeInterval
         self.threads = []
         self.end = False
-        self.timeRewardMax = 10  # FIXME: let it be a parameter
+        self.timeRewardMax = 20  # FIXME: let it be a parameter
         self.startTime = None
 
         self.macAddr = '68:3e:34:9b:34:05'
@@ -34,10 +34,10 @@ class wlanEnv:
             self.startTime = time.time()
         lastTime = time.time() - self.startTime
         p = 0
-        if lastTime >= 10:
+        if lastTime >= 15:
             p = 1
         else:
-            lastTime = lastTime * 3 / 10
+            lastTime = lastTime * 3 / 15
             lastTime = lastTime - 3
             # print lastTime
             p = (math.exp(lastTime) - math.exp(-lastTime)) / (math.exp(lastTime) + math.exp(-lastTime))
