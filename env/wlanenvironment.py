@@ -60,21 +60,24 @@ class wlanEnv:
             # print rssiDict
             # print 'reward'
             # print rewardDict
-            if rssiDict['state'] and rewardDict['state']:
-                rssiDict.pop('state')
-                rewardDict.pop('state')
-                self.throught = rewardDict['reward']
-                self.reward = rewardDict['reward'] + self.__calculateTimeReward()
-                if self.obsevation is None :
-                    self.obsevation = np.array([rssiDict.values()])
-                elif self.obsevation.shape[0] == self.seqLen:
-                    obsevation = np.delete(self.obsevation, (0), axis=0)
-                    obsevation = np.append(obsevation, [rssiDict.values()],axis=0)
-                    self.obsevation = obsevation
-                    if not self.valid:
-                        self.valid = True
-                else:
-                    self.obsevation = np.append(self.obsevation, [rssiDict.values()], axis=0)
+            if len(rssiDict) == (self.numAp + 1) and len(rewardDict) == (self.numAp + 1):
+                if rssiDict['state'] and rewardDict['state']:
+                    rssiDict.pop('state')
+                    rewardDict.pop('state')
+                    self.throught = rewardDict['reward']
+                    self.reward = rewardDict['reward'] + self.__calculateTimeReward()
+                    if self.obsevation is None :
+                        self.obsevation = np.array([rssiDict.values()])
+                    elif self.obsevation.shape[0] == self.seqLen:
+                        obsevation = np.delete(self.obsevation, (0), axis=0)
+                        obsevation = np.append(obsevation, [rssiDict.values()],axis=0)
+                        self.obsevation = obsevation
+                        if not self.valid:
+                            self.valid = True
+                    else:
+                        self.obsevation = np.append(self.obsevation, [rssiDict.values()], axis=0)
+            else:
+                print "Some ap is not working......Please check!!!"
             sleep(timeInterval)
 
     def __handover(self, clientHwAddr, agentIp):
