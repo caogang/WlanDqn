@@ -60,7 +60,7 @@ class wlanEnv:
             # print rssiDict
             # print 'reward'
             # print rewardDict
-            if len(rssiDict) == (self.numAp + 1) and len(rewardDict) == (self.numAp + 1):
+            if len(rssiDict) == (self.numAp + 1) and len(rewardDict) == 2:
                 if rssiDict['state'] and rewardDict['state']:
                     rssiDict.pop('state')
                     rewardDict.pop('state')
