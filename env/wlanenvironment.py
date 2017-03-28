@@ -48,10 +48,10 @@ class wlanEnv:
             self.startTime = time.time()
         lastTime = time.time() - self.startTime
         p = 0
-        if lastTime >= 15:
+        if lastTime >= 10:
             p = 1
         else:
-            lastTime = lastTime * 3 / 15
+            lastTime = lastTime * 3 / 10
             lastTime = lastTime - 3
             # print lastTime
             p = (math.exp(lastTime) - math.exp(-lastTime)) / (math.exp(lastTime) + math.exp(-lastTime))
