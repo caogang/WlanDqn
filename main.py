@@ -12,7 +12,7 @@ def main():
     env.start()
 
     numAPs, numActions, numAdditionDim = env.getDimSpace()
-    brain = BrainDQN(numActions, numAPs, numAdditionDim, BUFFER_LEN, param_file='saved_networks/network-dqn.params')
+    brain = BrainDQN(numActions, numAPs, numAdditionDim, BUFFER_LEN)
 
     while not env.observe()[0]:
         time.sleep(0.5)
