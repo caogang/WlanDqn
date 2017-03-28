@@ -110,7 +110,7 @@ class wlanEnv:
     def observe(self):
         rssi = self.obsevation.astype(int)
         addition = np.array([self.lastActionId, self.currentId])
-        return self.valid, rssi, addition
+        return self.valid, (rssi, addition)
 
     def step(self, action):
         actionId = action.argmax()
@@ -121,9 +121,7 @@ class wlanEnv:
 
         _, reward, throught = self.getReward()
         self.lastActionId = actionId
-        _, rssi, addition = self.observe()
-
-        nextObservation = (rssi, addition)
+        _, nextObservation = self.observe()
 
         return reward, throught, nextObservation
 
