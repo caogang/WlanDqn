@@ -100,7 +100,7 @@ class BrainDQN:
                     'beta1': 0.5,
                 })
         else:
-            modQ = mx.mod.Module(symbol=self.sym(predict=True), data_names=('data',), label_names=None, context=ctx)
+            modQ = mx.mod.Module(symbol=self.sym(predict=True), data_names=('data', 'additionData'), label_names=None, context=ctx)
             batch = 1
             modQ.bind(data_shapes=[('data', (batch, self.seqLen, self.numAps)),
                                    ('additionData', (batch, self.numAdditionDim))],
@@ -223,8 +223,8 @@ class BrainDQN:
 
 if __name__ == '__main__':
     CONTROLLER_IP = '10.103.12.166:8080'
-    BUFFER_LEN = 3
-    ENV_REFRESH_INTERVAL = 0.1
+    BUFFER_LEN = 60
+    ENV_REFRESH_INTERVAL = 0.01
     env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL)
     env.start()
 
@@ -236,11 +236,14 @@ if __name__ == '__main__':
 
     observation0 = env.observe()[1]
     brain.setInitState(observation0)
+
+    np.set_printoptions(threshold=5)
+
     while True:
         action = brain.getAction()
         print 'action:\n' + str(action.argmax())
         reward, throught, nextObservation = env.step(action)
         print 'reward:\n' + str(reward)
         print 'throught: ' + str(throught)
+        print 'observation:\n' + str(nextObservation)
         brain.setPerception(nextObservation, action, reward, False)
-        time.sleep(1)
