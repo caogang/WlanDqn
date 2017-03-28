@@ -24,10 +24,24 @@ class wlanEnv:
         dictKey = rssiDict.keys()
         dictKey.remove('state')
         self.numAp = len(dictKey)
-        # self.ap2id = dict(zip(dictKey, xrange(0, self.numAp)))
+        self.ap2id = dict(zip(dictKey, xrange(0, self.numAp)))
         self.id2ap = dict(zip(xrange(0, self.numAp), dictKey))
         self.obsevation = None
         self.valid = False
+
+        # initial actionId, currentId
+        self.lastActionId = self.numAp
+        self.currentId = self.__getCurrentId()
+        self.additionalDim = 2
+
+    def __getCurrentId(self):
+        url = 'http://' + self.remoteAddr + '/odin/clients/connected/json'
+        dict = curl_keystone(url)
+        # print dict
+        dict = json.loads(dict)
+        agentIp = dict[self.macAddr]['agent']
+        agentId = self.ap2id[agentIp]
+        return agentId
 
     def __calculateTimeReward(self):
         if self.startTime is None:
@@ -91,20 +105,25 @@ class wlanEnv:
     action space dimension
     '''
     def getDimSpace(self):
-        return self.numAp, self.numAp + 1
+        return self.numAp, self.numAp + 1, self.additionalDim
 
     def observe(self):
         rssi = self.obsevation.astype(int)
-        return self.valid, rssi
+        addition = np.array([self.lastActionId, self.currentId])
+        return self.valid, rssi, addition
 
     def step(self, action):
         actionId = action.argmax()
         if actionId < self.numAp:
             self.__handover(self.macAddr, self.id2ap[actionId])
+            self.currentId = actionId
             self.startTime = time.time()
 
         _, reward, throught = self.getReward()
-        _, nextObservation = self.observe()
+        self.lastActionId = actionId
+        _, rssi, addition = self.observe()
+
+        nextObservation = (rssi, addition)
 
         return reward, throught, nextObservation
 
@@ -132,55 +151,41 @@ def curl_keystone(url):
 
 if __name__ == '__main__':
     env = wlanEnv('10.103.12.166:8080', 10, timeInterval=0.1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    sleep(1)
-    print env.cal()
-    '''
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
+    # sleep(1)
+    # print env.cal()
     env.start()
     sleep(2)
-    print env.observe()
-    print env.step([1,0,0])
-    sleep(0.1)
-    print env.observe()
-    print env.step([1,0,0])
-    sleep(0.1)
-    print env.observe()
-    print env.step([1,0,0])
-    sleep(0.1)
-    print env.step([0,1,0])
-    print env.getDimSpace()
+    print env.step(np.array([1,0,0]))
+    sleep(1)
+    print env.step(np.array([0,0,1]))
+    sleep(1)
+    print env.step(np.array([0,0,1]))
+    sleep(1)
+    print env.step(np.array([0,1,0]))
+    sleep(1)
+    print env.step(np.array([0,0,1]))
+    sleep(1)
+    print env.step(np.array([0,0,1]))
+    sleep(1)
+    print env.step(np.array([1,0,0]))
+    sleep(1)
+    print env.step(np.array([0,0,1]))
+    sleep(1)
+    print env.step(np.array([0,0,1]))
+    sleep(1)
     env.stop()
     sleep(2)
-    '''
-    pass
-
-    '''
-    env.start()
-    sleep(2)
-    print env.observe()
-    print env.step([1,0,0])
-    sleep(0.1)
-    print env.observe()
-    print env.step([1,0,0])
-    sleep(0.1)
-    print env.observe()
-    print env.step([1,0,0])
-    sleep(0.1)
-    print env.step([0,1,0])
-    print env.getDimSpace()
-    env.stop()
-    sleep(2)
-    '''
     pass
