@@ -14,7 +14,7 @@ class wlanEnv:
         self.timeInverval = timeInterval
         self.threads = []
         self.end = False
-        self.timeRewardMax = 20  # FIXME: let it be a parameter
+        self.timeRewardMax = 10  # FIXME: let it be a parameter 5 10 20
         self.startTime = None
 
         self.macAddr = '68:3e:34:9b:34:05'
