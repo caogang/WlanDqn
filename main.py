@@ -1,6 +1,7 @@
 from env.wlanenvironment import wlanEnv
 from Brain import BrainDQN
 import time
+import numpy as np
 
 CONTROLLER_IP = '10.103.12.166:8080'
 BUFFER_LEN = 60
@@ -18,15 +19,17 @@ def main():
 
     observation0 = env.observe()[1]
     brain.setInitState(observation0)
+
+    np.set_printoptions(threshold=5)
+    print 'Initial observation:\n' + str(observation0)
+
     while True:
         action = brain.getAction()
         print 'action:\n' + str(action.argmax())
         reward, throught, nextObservation = env.step(action)
-        print 'reward:\n' + str(reward)
-        print 'throught: ' + str(throught)
+        print 'reward: ' + str(reward) + ', throught: ' + str(throught)
+        print 'Next observation:\n' + str(nextObservation)
         brain.setPerception(nextObservation, action, reward, False)
-    
-
 
 if __name__ == '__main__':
     main()
