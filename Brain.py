@@ -28,7 +28,7 @@ ctx = mx.cpu()
 
 
 class BrainDQN:
-    def __init__(self, numActions, numAps, seqLen, param_file=None):
+    def __init__(self, numActions, numAps, numAdditionDim, seqLen, param_file=None):
         # init replay memory
         self.replayMemory = deque()
         # init some parameters
@@ -37,6 +37,7 @@ class BrainDQN:
         self.numActions = numActions
         self.numAps = numAps
         self.seqLen = seqLen
+        self.numAdditionDim = numAdditionDim
 
         self.target = self.createQNetwork(isTrain=False)
 
@@ -54,6 +55,7 @@ class BrainDQN:
         data = mx.sym.Variable('data')
         yInput = mx.sym.Variable('yInput')
         actionInput = mx.sym.Variable('actionInput')
+        additionData = mx.sym.Variable('additionData')
 
         stack.reset()
         outputs, states = stack.unroll(self.seqLen, inputs=data, merge_outputs=True)
@@ -63,7 +65,10 @@ class BrainDQN:
         else:
             pred = mx.sym.Reshape(outputs, shape=(BATCH_SIZE, -1))
 
-        fc1 = mx.sym.FullyConnected(data=pred, num_hidden=512, name='fc1')
+        # Concat additional dimension data
+        concatPred = mx.sym.Concat(pred, additionData, dim=1)
+
+        fc1 = mx.sym.FullyConnected(data=concatPred, num_hidden=512, name='fc1')
         relu4 = mx.sym.Activation(data=fc1, act_type='relu', name='relu4')
         Qvalue = mx.sym.FullyConnected(data=relu4, num_hidden=self.numActions, name='qvalue')
         temp = Qvalue * actionInput
@@ -78,10 +83,11 @@ class BrainDQN:
 
     def createQNetwork(self, bef_args=None, isTrain=True):
         if isTrain:
-            modQ = mx.mod.Module(symbol=self.sym(), data_names=('data', 'actionInput'), label_names=('yInput',),
+            modQ = mx.mod.Module(symbol=self.sym(), data_names=('data', 'actionInput', 'additionData'), label_names=('yInput',),
                                  context=ctx)
             batch = BATCH_SIZE
-            modQ.bind(data_shapes=[('data', (batch, self.seqLen, self.numAps)), ('actionInput', (batch, self.numActions))],
+            modQ.bind(data_shapes=[('data', (batch, self.seqLen, self.numAps)), ('actionInput', (batch, self.numActions)),
+                                   ('additionData', (batch, self.numAdditionDim))],
                       label_shapes=[('yInput', (batch,))],
                       for_training=isTrain)
 
@@ -96,7 +102,8 @@ class BrainDQN:
         else:
             modQ = mx.mod.Module(symbol=self.sym(predict=True), data_names=('data',), label_names=None, context=ctx)
             batch = 1
-            modQ.bind(data_shapes=[('data', (batch, self.seqLen, self.numAps))],
+            modQ.bind(data_shapes=[('data', (batch, self.seqLen, self.numAps)),
+                                   ('additionData', (batch, self.numAdditionDim))],
                       for_training=isTrain)
 
             modQ.init_params(initializer=mx.init.Xavier(factor_type="in", magnitude=2.34), arg_params=bef_args)
@@ -120,16 +127,20 @@ class BrainDQN:
     def trainQNetwork(self):
         # Step 1: obtain random minibatch from replay memory
         minibatch = random.sample(self.replayMemory, BATCH_SIZE)
-        state_batch = np.squeeze([data[0] for data in minibatch])
+        rssiState_batch = np.squeeze([data[0][0] for data in minibatch])
+        additionalState_batch = np.squeeze([data[0][1] for data in minibatch])
         action_batch = np.squeeze([data[1] for data in minibatch])
         reward_batch = np.squeeze([data[2] for data in minibatch])
-        nextState_batch = [data[3] for data in minibatch]
+        nextRssiState_batch = [data[3][0] for data in minibatch]
+        nextAdditionalState_batch = [data[3][1] for data in minibatch]
 
         # Step 2: calculate y
         y_batch = np.zeros((BATCH_SIZE,))
         Qvalue = []
         for i in range(BATCH_SIZE):
-            self.target.forward(mx.io.DataBatch([mx.nd.array(nextState_batch[i].reshape(1, self.seqLen, self.numAps), ctx)], []))
+            self.target.forward(mx.io.DataBatch([mx.nd.array(nextRssiState_batch[i].reshape(1, self.seqLen, self.numAps), ctx),
+                                                mx.nd.array(nextAdditionalState_batch[i].reshape(1, self.numAdditionDim), ctx)],
+                                                []))
             Qvalue.append(self.target.get_outputs()[0].asnumpy())
         Qvalue_batch = np.squeeze(Qvalue)
         terminal = np.squeeze([data[4] for data in minibatch])
@@ -137,7 +148,9 @@ class BrainDQN:
         if (terminal == False).shape[0] > 0:
             y_batch[terminal == False] += (GAMMA * np.max(Qvalue_batch, axis=1))[terminal == False]
 
-        self.Qnet.forward(mx.io.DataBatch([mx.nd.array(state_batch, ctx), mx.nd.array(action_batch, ctx)],
+        self.Qnet.forward(mx.io.DataBatch([mx.nd.array(rssiState_batch, ctx),
+                                           mx.nd.array(action_batch, ctx),
+                                           mx.nd.array(additionalState_batch, ctx)],
                                           [mx.nd.array(y_batch, ctx)]), is_train=True)
         self.Qnet.backward()
         self.Qnet.update()
@@ -179,7 +192,9 @@ class BrainDQN:
 
     def getAction(self, retIndex=False):
         # print type(self.currentState)
-        self.target.forward(mx.io.DataBatch([mx.nd.array(self.currentState.reshape(1, self.seqLen, self.numAps), ctx)], []))
+        self.target.forward(mx.io.DataBatch([mx.nd.array(self.currentState[0].reshape(1, self.seqLen, self.numAps), ctx),
+                                             mx.nd.array(self.currentState[1].reshape(1, self.numAdditionDim))],
+                                            []))
         QValue = np.squeeze(self.target.get_outputs()[0].asnumpy())
         action = np.zeros(self.numActions)
         action_index = 0
@@ -213,17 +228,19 @@ if __name__ == '__main__':
     env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL)
     env.start()
 
-    numAPs, numActions = env.getDimSpace()
-    brain = BrainDQN(numActions, numAPs, BUFFER_LEN)
+    numAPs, numActions, numAdditionDim = env.getDimSpace()
+    brain = BrainDQN(numActions, numAPs, numAdditionDim, BUFFER_LEN)
 
     while not env.observe()[0]:
         time.sleep(0.5)
 
     observation0 = env.observe()[1]
     brain.setInitState(observation0)
-    action = brain.getAction()
-    env.step(action)
-    nextObservation = env.observe()
-    reward = env.getReward()
-    brain.setPerception(nextObservation, action, reward, False)
-    env.stop()
+    while True:
+        action = brain.getAction()
+        print 'action:\n' + str(action.argmax())
+        reward, throught, nextObservation = env.step(action)
+        print 'reward:\n' + str(reward)
+        print 'throught: ' + str(throught)
+        brain.setPerception(nextObservation, action, reward, False)
+        time.sleep(1)

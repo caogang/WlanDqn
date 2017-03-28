@@ -10,8 +10,8 @@ def main():
     env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL)
     env.start()
 
-    numAPs, numActions = env.getDimSpace()
-    brain = BrainDQN(numActions, numAPs, BUFFER_LEN, param_file='saved_networks/network-dqn.params')
+    numAPs, numActions, numAdditionDim = env.getDimSpace()
+    brain = BrainDQN(numActions, numAPs, numAdditionDim, BUFFER_LEN, param_file='saved_networks/network-dqn.params')
 
     while not env.observe()[0]:
         time.sleep(0.5)
