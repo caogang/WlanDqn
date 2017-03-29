@@ -7,7 +7,7 @@ import time
 import math
 
 class wlanEnv:
-    def __init__(self, remoteControllerAddr, seqLen, timeInterval=0.1):
+    def __init__(self, remoteControllerAddr, seqLen, timeInterval=0.1, additionalDim=0):
         self.remoteAddr = remoteControllerAddr
         self.numAp = 0
         self.seqLen = seqLen
@@ -32,7 +32,7 @@ class wlanEnv:
         # initial actionId, currentId
         self.lastActionId = self.numAp
         self.currentId = self.__getCurrentId()
-        self.additionalDim = 2
+        self.additionalDim = additionalDim # FIXME: 0 or 2
 
     def __getCurrentId(self):
         url = 'http://' + self.remoteAddr + '/odin/clients/connected/json'
@@ -57,7 +57,10 @@ class wlanEnv:
             p = (math.exp(lastTime) - math.exp(-lastTime)) / (math.exp(lastTime) + math.exp(-lastTime))
             p = p + 1
             # print p
-        return p * self.timeRewardMax
+        if self.additionalDim > 0:
+            return p * self.timeRewardMax
+        else:
+            return 0  # FIXME : need to be tanh(X) X>0
 
     def cal(self):
         return self.__calculateTimeReward()
@@ -105,16 +108,22 @@ class wlanEnv:
     action space dimension
     '''
     def getDimSpace(self):
-        return self.numAp, self.numAp + 1, self.additionalDim
+        if self.additionalDim > 0:
+            return self.numAp, self.numAp+1, self.additionalDim
+        else:
+            return self.numAp, self.numAp, self.additionalDim
 
     def observe(self):
         rssi = self.obsevation.astype(int)
-        addition = np.array([self.lastActionId, self.currentId])
-        return self.valid, (rssi, addition)
+        if self.additionalDim > 0:
+            addition = np.array([self.lastActionId, self.currentId])
+            return self.valid, (rssi, addition)
+        else:
+            return self.valid, rssi
 
     def step(self, action):
         actionId = action.argmax()
-        if actionId < self.numAp:
+        if (self.additionalDim > 0 and actionId < self.numAp) or (self.additionalDim <= 0 and actionId != self.currentId):
             self.__handover(self.macAddr, self.id2ap[actionId])
             self.currentId = actionId
             self.startTime = time.time()
