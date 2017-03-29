@@ -13,11 +13,11 @@ import time
 
 # Hyper Parameters:
 FRAME_PER_ACTION = 1
-GAMMA = 0.99  # decay rate of past observations
+GAMMA = 0.6  # decay rate of past observations
 OBSERVE = 100.  # timesteps to observe before training
 EXPLORE = 200000.  # frames over which to anneal epsilon
 FINAL_EPSILON = 0.001  # 0.001 # final value of epsilon
-INITIAL_EPSILON = 0.3  # 0.01 # starting value of epsilon
+INITIAL_EPSILON = 0.1  # 0.01 # starting value of epsilon
 REPLAY_MEMORY = 50000  # number of previous transitions to remember
 BATCH_SIZE = 32  # size of minibatch
 UPDATE_TIME = 10
@@ -61,9 +61,9 @@ class BrainDQN:
         outputs, states = stack.unroll(self.seqLen, inputs=data, merge_outputs=True)
         
         if predict :
-            pred = mx.sym.Reshape(outputs, shape=(1, -1))
+            pred = mx.sym.Reshape(states[0], shape=(1, -1))
         else:
-            pred = mx.sym.Reshape(outputs, shape=(BATCH_SIZE, -1))
+            pred = mx.sym.Reshape(states[0], shape=(BATCH_SIZE, -1))
 
         # Concat additional dimension data
         concatPred = mx.sym.Concat(pred, additionData, dim=1)
@@ -224,7 +224,7 @@ class BrainDQN:
 if __name__ == '__main__':
     CONTROLLER_IP = '10.103.12.166:8080'
     BUFFER_LEN = 60
-    ENV_REFRESH_INTERVAL = 0.01
+    ENV_REFRESH_INTERVAL = 0.1
     env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL)
     env.start()
 
