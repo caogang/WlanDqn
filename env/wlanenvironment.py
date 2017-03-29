@@ -27,6 +27,7 @@ class wlanEnv:
         self.ap2id = dict(zip(dictKey, xrange(0, self.numAp)))
         self.id2ap = dict(zip(xrange(0, self.numAp), dictKey))
         self.obsevation = None
+        self.reward = None
         self.valid = False
 
         # initial actionId, currentId
@@ -81,8 +82,7 @@ class wlanEnv:
                 if rssiDict['state'] and rewardDict['state']:
                     rssiDict.pop('state')
                     rewardDict.pop('state')
-                    self.throught = rewardDict['reward']
-                    self.reward = rewardDict['reward'] + self.__calculateTimeReward()
+
                     if self.obsevation is None :
                         self.obsevation = np.array([rssiDict.values()])
                     elif self.obsevation.shape[0] == self.seqLen:
@@ -93,6 +93,17 @@ class wlanEnv:
                             self.valid = True
                     else:
                         self.obsevation = np.append(self.obsevation, [rssiDict.values()], axis=0)
+
+                    if self.reward is None:
+                        self.reward = np.array([rewardDict['reward']])
+                    elif self.reward.shape[0] == self.seqLen:
+                        reward = np.delete(self.reward, (0), axis=0)
+                        reward = np.append(reward, [rewardDict['reward']], axis=0)
+                        self.reward = reward
+                        if not self.valid:
+                            self.valid = True
+                    else:
+                        self.reward = np.append(self.reward, [rewardDict['reward']], axis=0)
             else:
                 print "Some ap is not working......Please check!!!"
             sleep(timeInterval)
@@ -136,7 +147,8 @@ class wlanEnv:
         return reward, throught, nextObservation
 
     def getReward(self):
-        return self.valid, self.reward, self.throught
+        self.throught = self.reward.mean()
+        return self.valid, self.throught, self.throught
 
     def start(self):
         t1 = threading.Thread(target=self.__getStatesFromRemote, args=(self.macAddr, self.timeInverval))
