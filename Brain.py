@@ -119,7 +119,7 @@ class BrainDQN:
                                        ('additionData', (batch, self.numAdditionDim))],
                           for_training=isTrain)
             else:
-                modQ = mx.mod.Module(symbol=self.sym(predict=True), data_names=('data'), label_names=None, context=ctx)
+                modQ = mx.mod.Module(symbol=self.sym(predict=True), data_names=('data',), label_names=None, context=ctx)
                 batch = 1
                 modQ.bind(data_shapes=[('data', (batch, self.seqLen, self.numAps))],
                           for_training=isTrain)
@@ -231,7 +231,7 @@ class BrainDQN:
                                             []))
         else:
             self.target.forward(
-                mx.io.DataBatch([mx.nd.array(self.currentState[0].reshape(1, self.seqLen, self.numAps), ctx)],
+                mx.io.DataBatch([mx.nd.array(self.currentState.reshape(1, self.seqLen, self.numAps), ctx)],
                                 []))
         QValue = np.squeeze(self.target.get_outputs()[0].asnumpy())
         action = np.zeros(self.numActions)
