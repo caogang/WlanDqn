@@ -161,7 +161,7 @@ class BrainDQN:
         y_batch = np.zeros((BATCH_SIZE,))
         Qvalue = []
         for i in range(BATCH_SIZE):
-            if numAdditionDim > 0:
+            if self.numAdditionDim > 0:
                 self.target.forward(mx.io.DataBatch([mx.nd.array(nextRssiState_batch[i].reshape(1, self.seqLen, self.numAps), ctx),
                                                 mx.nd.array(nextAdditionalState_batch[i].reshape(1, self.numAdditionDim), ctx)],
                                                 []))
