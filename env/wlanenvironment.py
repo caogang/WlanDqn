@@ -136,7 +136,7 @@ class wlanEnv:
         actionId = action.argmax()
         if (self.additionalDim > 0 and actionId < self.numAp) or (self.additionalDim <= 0 and actionId != self.currentId):
             self.__handover(self.macAddr, self.id2ap[actionId])
-            sleep(5)
+            sleep(self.timeInverval * self.seqLen)
             self.currentId = actionId
             self.startTime = time.time()
 
