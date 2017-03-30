@@ -100,8 +100,6 @@ class wlanEnv:
                         reward = np.delete(self.reward, (0), axis=0)
                         reward = np.append(reward, [rewardDict['reward']], axis=0)
                         self.reward = reward
-                        if not self.valid:
-                            self.valid = True
                     else:
                         self.reward = np.append(self.reward, [rewardDict['reward']], axis=0)
             else:
