@@ -262,6 +262,7 @@ class BrainDQN:
             return action
 
     def saveReplayMemory(self):
+        print 'Memory Size: ' + str(len(self.replayMemory))
         with open('saved_networks/replayMemory.pkl', 'wb') as handle:
             pickle.dump(self.replayMemory, handle, -1)  # Using the highest protocol available
         pass

@@ -96,7 +96,7 @@ class wlanEnv:
 
                     if self.reward is None:
                         self.reward = np.array([rewardDict['reward']])
-                    elif self.reward.shape[0] == self.seqLen:
+                    elif self.reward.shape[0] == (self.seqLen//2):
                         reward = np.delete(self.reward, (0), axis=0)
                         reward = np.append(reward, [rewardDict['reward']], axis=0)
                         self.reward = reward
