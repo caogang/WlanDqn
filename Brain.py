@@ -10,6 +10,8 @@ import random
 from collections import deque
 from env.wlanenvironment import wlanEnv
 import time
+import pickle
+import os
 
 # Hyper Parameters:
 FRAME_PER_ACTION = 1
@@ -30,7 +32,7 @@ ctx = mx.cpu()
 class BrainDQN:
     def __init__(self, numActions, numAps, numAdditionDim, seqLen, param_file=None):
         # init replay memory
-        self.replayMemory = deque()
+        self.replayMemory = self.loadReplayMemory()
         # init some parameters
         self.timeStep = 0
         self.epsilon = INITIAL_EPSILON
@@ -258,6 +260,21 @@ class BrainDQN:
         else:
             # print 'type return action :' + str(type(action))
             return action
+
+    def saveReplayMemory(self):
+        with open('saved_networks/replayMemory.pkl', 'wb') as handle:
+            pickle.dump(self.replayMemory, handle, -1)  # Using the highest protocol available
+        pass
+
+    def loadReplayMemory(self):
+        if os.path.exists('saved_networks/replayMemory.pkl'):
+            with open('saved_networks/replayMemory.pkl', 'rb') as handle:
+                replayMemory = pickle.load(handle)  # Warning: If adding something here, also modifying saveDataset
+        else:
+            replayMemory = deque()
+        return replayMemory
+
+
 
 if __name__ == '__main__':
     CONTROLLER_IP = '10.103.12.166:8080'
