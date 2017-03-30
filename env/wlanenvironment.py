@@ -148,7 +148,7 @@ class wlanEnv:
 
     def getReward(self):
         self.throught = self.reward.mean()
-        print self.throught, self.reward.std()
+        # print self.throught, self.reward.std()
         return self.valid, self.throught, self.throught
 
     def start(self):

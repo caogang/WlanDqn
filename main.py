@@ -47,6 +47,7 @@ def main():
             print 'Next observation:\n' + str(nextObservation)
             brain.setPerception(nextObservation, action, reward, False)
     except KeyboardInterrupt:
+        print 'Saving replayMemory......'
         brain.saveReplayMemory()
 
 if __name__ == '__main__':
