@@ -1,9 +1,3 @@
-# -----------------------------
-# File: Deep Q-Learning Algorithm
-# Author: Flood Sung
-# Date: 2016.3.21
-# -----------------------------
-
 import mxnet as mx
 import numpy as np
 import random
@@ -260,6 +254,22 @@ class BrainDQN:
         else:
             # print 'type return action :' + str(type(action))
             return action
+
+    def predict(self, observation):
+        if self.numAdditionDim > 0:
+            self.target.forward(mx.io.DataBatch([mx.nd.array(observation[0].reshape(1, self.seqLen, self.numAps), ctx),
+                                             mx.nd.array(observation[1].reshape(1, self.numAdditionDim))],
+                                            []))
+        else:
+            self.target.forward(
+                mx.io.DataBatch([mx.nd.array(observation.reshape(1, self.seqLen, self.numAps), ctx)],
+                                []))
+        QValue = np.squeeze(self.target.get_outputs()[0].asnumpy())
+        action = np.zeros(self.numActions)
+        action_index = np.argmax(QValue)
+        action[action_index] = 1
+
+        return action, QValue, action_index
 
     def saveReplayMemory(self):
         print 'Memory Size: ' + str(len(self.replayMemory))

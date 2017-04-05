@@ -22,7 +22,7 @@ ENV_REFRESH_INTERVAL = 0.1
 # signal.signal(signal.SIGINT, sigint_handler)
 # is_sigint_up = False
 
-def main():
+def train():
     env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL)
     env.start()
 
@@ -49,6 +49,29 @@ def main():
     except KeyboardInterrupt:
         print 'Saving replayMemory......'
         brain.saveReplayMemory()
+    pass
+
+def test():
+    env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL)
+    env.start()
+
+    numAPs, numActions, numAdditionDim = env.getDimSpace()
+    brain = BrainDQN(numActions, numAPs, numAdditionDim, BUFFER_LEN, param_file='saved_networks/network-dqn.params')
+
+    while not env.observe()[0]:
+        time.sleep(0.5)
+
+    observation = env.observe()[1]
+
+    np.set_printoptions(threshold=5)
+
+    while True:
+        action, q_value, action_index = brain.predict(observation)
+        print 'action:\n' + str(action_index)
+        reward, throught, observation = env.step(action)
+        print 'q_value: ' + str(q_value)
+        print 'reward: ' + str(reward) + ', throught: ' + str(throught)
+        print 'Next observation:\n' + str(observation)
 
 if __name__ == '__main__':
-    main()
+    test()
