@@ -1,5 +1,6 @@
 from env.wlanenvironment import wlanEnv
 from Brain import BrainDQN
+from display import display
 import time
 import numpy as np
 # import signal
@@ -65,12 +66,19 @@ def test():
 
     np.set_printoptions(threshold=5)
 
+    data = {}
     while True:
         action, q_value, action_index = brain.predict(observation)
         print 'action:\n' + str(action_index)
         reward, throught, observation = env.step(action)
         print 'q_value: ' + str(q_value)
         print 'reward: ' + str(reward) + ', throught: ' + str(throught)
+        data['timestamp'] = time.time()
+        data['rssi'] = observation[-1]
+        data['q_value'] = q_value
+        data['reward'] = reward
+        data['action'] = action_index
+        display(data)
         print 'Next observation:\n' + str(observation)
 
 if __name__ == '__main__':
