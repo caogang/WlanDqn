@@ -75,9 +75,9 @@ def test():
         print 'reward: ' + str(reward) + ', throught: ' + str(throught)
         data['timestamp'] = time.time()
         data['rssi'] = observation[-1]
-        data['q_value'] = q_value
+        data['q'] = q_value
         data['reward'] = reward
-        data['action'] = action_index
+        data['action_index'] = action_index
         display(data)
         print 'Next observation:\n' + str(observation)
 
