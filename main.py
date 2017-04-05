@@ -3,6 +3,7 @@ from Brain import BrainDQN
 from display import display
 import time
 import numpy as np
+from display import Display
 # import signal
 
 CONTROLLER_IP = '10.103.12.166:8080'
@@ -67,19 +68,24 @@ def test():
     np.set_printoptions(threshold=5)
 
     data = {}
-    while True:
-        action, q_value, action_index = brain.predict(observation)
-        print 'action:\n' + str(action_index)
-        reward, throught, observation = env.step(action)
-        print 'q_value: ' + str(q_value)
-        print 'reward: ' + str(reward) + ', throught: ' + str(throught)
-        data['timestamp'] = time.time()
-        data['rssi'] = observation[-1]
-        data['q'] = q_value
-        data['reward'] = reward
-        data['action_index'] = action_index
-        display(data)
-        print 'Next observation:\n' + str(observation)
+    fig = Display()
+    fig.display()
+    try:
+        while True:
+            action, q_value, action_index = brain.predict(observation)
+            print 'action:\n' + str(action_index)
+            reward, throught, observation = env.step(action)
+            print 'q_value: ' + str(q_value)
+            print 'reward: ' + str(reward) + ', throught: ' + str(throught)
+            data['timestamp'] = time.time()
+            data['rssi'] = observation[-1]
+            data['q'] = q_value
+            data['reward'] = reward
+            data['action_index'] = action_index
+            fig.append(data)
+            print 'Next observation:\n' + str(observation)
+    except KeyboardInterrupt:
+        fig.stop()
 
 if __name__ == '__main__':
     test()
