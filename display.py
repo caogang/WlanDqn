@@ -6,17 +6,12 @@ import threading
 
 class Display:
     def __init__(self, REFRESH_INTERVAL=1):
-        self.fig = plt.figure()
         self.t_begin = None
         self.t = []
         self.rssi = {}
         self.action = []
         self.reward = []
         self.q_value = {}
-        self.rssi_fig = self.fig.add_subplot(2, 2, 1)
-        self.reward_fig = self.fig.add_subplot(2, 2, 2)
-        self.action_fig = self.fig.add_subplot(2, 2, 3)
-        self.q_fig = self.fig.add_subplot(2, 2, 4)
 
         self.end = False
         self.threads = []
@@ -60,37 +55,36 @@ class Display:
         self.rssi = copy.deepcopy(rssi)
         self.reward = copy.copy(reward)
         self.action = copy.copy(action)
-        print(t, q_value, rssi, reward, action)
-
-    def plot(self):
-        # while not self.end:
-        #     if len(self.t) == 0:
-        #         time.sleep(self.interval)
-        #         continue
-        #     self.rssi_fig.plot(self.t, self.rssi[0])
-        #     self.reward_fig.plot(self.t, self.reward)
-        #     self.action_fig.plot(self.t, self.action)
-        #     self.q_fig.plot(self.t, self.q_value[0])
-        #     self.fig.show()
-        #     time.sleep(self.interval)
-        self.rssi_fig.plot(self.t, self.rssi[0])
-        self.reward_fig.plot(self.t, self.reward)
-        self.action_fig.plot(self.t, self.action)
-        self.q_fig.plot(self.t, self.q_value[0])
-        self.fig.show()
-        pass
 
     def _plot(self):
+
+        fig, ax = plt.subplots(nrows=2, ncols=2)
+        rssi_fig = ax[0][0]
+        reward_fig = ax[0][1]
+        action_fig = ax[1][0]
+        q_fig = ax[1][1]
+
         while not self.end:
             if len(self.t) == 0:
                 time.sleep(self.interval)
                 continue
-            self.rssi_fig.plot(self.t, self.rssi[0])
-            self.reward_fig.plot(self.t, self.reward)
-            self.action_fig.plot(self.t, self.action)
-            self.q_fig.plot(self.t, self.q_value[0])
-            self.fig.show()
-            time.sleep(self.interval)
+            rssi_fig.cla()
+            rssi_fig.grid()
+            rssi_fig.plot((self.t), self.rssi[0])
+
+            reward_fig.cla()
+            reward_fig.grid()
+            reward_fig.plot((self.t), self.reward)
+
+            action_fig.cla()
+            action_fig.grid()
+            action_fig.plot((self.t), self.action)
+
+            q_fig.cla()
+            q_fig.grid()
+            q_fig.plot((self.t), self.q_value[0])
+
+            plt.pause(self.interval)
         pass
 
     def display(self):
@@ -162,5 +156,5 @@ if __name__ == '__main__':
     time.sleep(0.1)
     # f.plot()
 
-    time.sleep(10)
+    time.sleep(5)
     f.stop()
