@@ -64,13 +64,14 @@ class Display:
         action_fig = ax[1][0]
         q_fig = ax[1][1]
 
-        t = copy.copy(self.t)
-        q_value = copy.deepcopy(self.q_value)
-        rssi = copy.deepcopy(self.rssi)
-        reward = copy.copy(self.reward)
-        action = copy.copy(self.action)
-
         while not self.end:
+
+            t = copy.copy(self.t)
+            q_value = copy.deepcopy(self.q_value)
+            rssi = copy.deepcopy(self.rssi)
+            reward = copy.copy(self.reward)
+            action = copy.copy(self.action)
+
             if len(t) == 0:
                 time.sleep(self.interval)
                 continue
