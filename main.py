@@ -41,7 +41,7 @@ def train():
     print 'Initial observation:\n' + str(observation0)
 
     data = {}
-    fig = Display()
+    fig = Display(env.id2ap)
     fig.display()
 
     try:
@@ -81,7 +81,7 @@ def test():
     np.set_printoptions(threshold=5)
 
     data = {}
-    fig = Display()
+    fig = Display(env.id2ap)
     fig.display()
     try:
         while True:

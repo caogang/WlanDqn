@@ -5,7 +5,7 @@ import time
 import threading
 
 class Display:
-    def __init__(self, REFRESH_INTERVAL=1):
+    def __init__(self, id2ap, REFRESH_INTERVAL=1):
         self.t_begin = None
         self.t = []
         self.rssi = {}
@@ -16,6 +16,7 @@ class Display:
         self.end = False
         self.threads = []
         self.interval = REFRESH_INTERVAL
+        self.id2ap = id2ap
         pass
 
     def append(self, data):
@@ -58,7 +59,7 @@ class Display:
 
     def _plot(self):
 
-        fig, ax = plt.subplots(nrows=2, ncols=2)
+        fig, ax = plt.subplots(nrows=2, ncols=2, sharex=True)
         rssi_fig = ax[0][0]
         reward_fig = ax[0][1]
         action_fig = ax[1][0]
@@ -80,22 +81,34 @@ class Display:
                 continue
 
             rssi_fig.cla()
+            rssi_fig.set_title("信号强度")
+            rssi_fig.set_ylabel("Rssi / dbm")
+            rssi_fig.set_ylim(-90, -20)
             rssi_fig.grid()
-            for r in rssi.values():
-                rssi_fig.plot(t, r)
+            for id, r in rssi.items():
+                rssi_fig.plot(t, np.array(r) - 255, label=self.id2ap[id])
 
             reward_fig.cla()
+            reward_fig.set_title("吞吐量")
+            reward_fig.set_ylabel("Throughtout / Mbps")
+            reward_fig.set_ylim(0, 70)
             reward_fig.grid()
             reward_fig.plot(t, reward)
 
             action_fig.cla()
-            action_fig.grid()
+            action_fig.set_title("分配的AP")
+            action_fig.set_xlabel("时间 / s")
+            action_fig.set_ylim(-1, 2)
             action_fig.plot(t, action)
 
             q_fig.cla()
+            q_fig.set_title("决策大脑估计的Q值")
+            q_fig.set_xlabel("时间 / s")
+            q_fig.set_ylabel("Future throughtout / Mbps")
+            q_fig.set_ylim(100, 160)
             q_fig.grid()
-            for q in q_value.values():
-                q_fig.plot(t, q)
+            for id, q in q_value.items():
+                q_fig.plot(t, q, label=self.id2ap[id])
 
             plt.pause(self.interval)
         pass
