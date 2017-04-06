@@ -72,12 +72,13 @@ class Display:
             reward = copy.copy(self.reward)
             action = copy.copy(self.action)
 
-            if len(t) != len(q_value) or len(t) != len(rssi) or len(t) != len(reward) or len(t) != len(action):
-                continue
-
             if len(t) == 0:
                 time.sleep(self.interval)
                 continue
+
+            if len(t) != len(q_value[0]) or len(t) != len(rssi[0]) or len(t) != len(reward) or len(t) != len(action):
+                continue
+
             rssi_fig.cla()
             rssi_fig.grid()
             for r in rssi.values():
