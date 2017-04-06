@@ -68,43 +68,48 @@ class wlanEnv:
 
     def __getStatesFromRemote(self, clientHwAddr, timeInterval):
         while not self.end:
-            rssiUrl = 'http://' + self.remoteAddr + '/dqn/rssi/json?mac=' + clientHwAddr
-            rssiDict = curl_keystone(rssiUrl)
-            rssiDict = json.loads(rssiDict)
-            rewardUrl = 'http://' + self.remoteAddr + '/dqn/reward/json?mac=' + clientHwAddr
-            rewardDict = curl_keystone(rewardUrl)
-            rewardDict = json.loads(rewardDict)
-            # print 'rssi'
-            # print rssiDict
-            # print 'reward'
-            # print rewardDict
-            if len(rssiDict) == (self.numAp + 1) and len(rewardDict) == 2:
-                if rssiDict['state'] and rewardDict['state']:
-                    rssiDict.pop('state')
-                    rewardDict.pop('state')
-
-                    if self.obsevation is None :
-                        self.obsevation = np.array([rssiDict.values()])
-                    elif self.obsevation.shape[0] == self.seqLen:
-                        obsevation = np.delete(self.obsevation, (0), axis=0)
-                        obsevation = np.append(obsevation, [rssiDict.values()],axis=0)
-                        self.obsevation = obsevation
-                        if not self.valid:
-                            self.valid = True
-                    else:
-                        self.obsevation = np.append(self.obsevation, [rssiDict.values()], axis=0)
-
-                    if self.reward is None:
-                        self.reward = np.array([rewardDict['reward']])
-                    elif self.reward.shape[0] == (self.seqLen//2):
-                        reward = np.delete(self.reward, (0), axis=0)
-                        reward = np.append(reward, [rewardDict['reward']], axis=0)
-                        self.reward = reward
-                    else:
-                        self.reward = np.append(self.reward, [rewardDict['reward']], axis=0)
+            try:
+                rssiUrl = 'http://' + self.remoteAddr + '/dqn/rssi/json?mac=' + clientHwAddr
+                rssiDict = curl_keystone(rssiUrl)
+                rssiDict = json.loads(rssiDict)
+                rewardUrl = 'http://' + self.remoteAddr + '/dqn/reward/json?mac=' + clientHwAddr
+                rewardDict = curl_keystone(rewardUrl)
+                rewardDict = json.loads(rewardDict)
+            except:
+                print 'Error or Exception in __getStatesFromRemote()'
             else:
-                print "Some ap is not working......Please check!!!"
-            sleep(timeInterval)
+                # print 'rssi'
+                # print rssiDict
+                # print 'reward'
+                # print rewardDict
+                if len(rssiDict) == (self.numAp + 1) and len(rewardDict) == 2:
+                    if rssiDict['state'] and rewardDict['state']:
+                        rssiDict.pop('state')
+                        rewardDict.pop('state')
+
+                        if self.obsevation is None :
+                            self.obsevation = np.array([rssiDict.values()])
+                        elif self.obsevation.shape[0] == self.seqLen:
+                            obsevation = np.delete(self.obsevation, (0), axis=0)
+                            obsevation = np.append(obsevation, [rssiDict.values()],axis=0)
+                            self.obsevation = obsevation
+                            if not self.valid:
+                                self.valid = True
+                        else:
+                            self.obsevation = np.append(self.obsevation, [rssiDict.values()], axis=0)
+
+                        if self.reward is None:
+                            self.reward = np.array([rewardDict['reward']])
+                        elif self.reward.shape[0] == (self.seqLen//2):
+                            reward = np.delete(self.reward, (0), axis=0)
+                            reward = np.append(reward, [rewardDict['reward']], axis=0)
+                            self.reward = reward
+                        else:
+                            self.reward = np.append(self.reward, [rewardDict['reward']], axis=0)
+                else:
+                    print "Some ap is not working......Please check!!!"
+            finally:
+                sleep(timeInterval)
 
     def __handover(self, clientHwAddr, agentIp):
         handoverUrl = 'http://' + self.remoteAddr + '/dqn/handover/json?mac=' + clientHwAddr + '&&agent=' + agentIp
