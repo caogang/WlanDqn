@@ -56,7 +56,7 @@ def train():
             data['rssi'] = nextObservation[-1]
             data['q'] = q
             data['reward'] = reward
-            data['action_index'] = np.argmax(q)
+            data['action_index'] = np.argmax(action)
             fig.append(data)
 
             brain.setPerception(nextObservation, action, reward, False)
