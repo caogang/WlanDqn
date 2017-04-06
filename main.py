@@ -84,6 +84,7 @@ def test():
             data['action_index'] = action_index
             fig.append(data)
             print 'Next observation:\n' + str(observation)
+            time.sleep(1)
     except KeyboardInterrupt:
         fig.stop()
 

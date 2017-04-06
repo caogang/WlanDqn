@@ -70,7 +70,8 @@ class Display:
                 continue
             rssi_fig.cla()
             rssi_fig.grid()
-            rssi_fig.plot((self.t), self.rssi[0])
+            for r in self.rssi.values():
+                rssi_fig.plot((self.t), r)
 
             reward_fig.cla()
             reward_fig.grid()
@@ -82,7 +83,8 @@ class Display:
 
             q_fig.cla()
             q_fig.grid()
-            q_fig.plot((self.t), self.q_value[0])
+            for q in self.q_value.values():
+                q_fig.plot((self.t), q)
 
             plt.pause(self.interval)
         pass
