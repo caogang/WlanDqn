@@ -250,10 +250,10 @@ class BrainDQN:
             self.epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE
 
         if retIndex:
-            return action_index
+            return action_index, QValue
         else:
             # print 'type return action :' + str(type(action))
-            return action
+            return action, QValue
 
     def predict(self, observation):
         if self.numAdditionDim > 0:

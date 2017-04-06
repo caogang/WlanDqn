@@ -40,17 +40,30 @@ def train():
     np.set_printoptions(threshold=5)
     print 'Initial observation:\n' + str(observation0)
 
+    data = {}
+    fig = Display()
+    fig.display()
+
     try:
         while True:
-            action = brain.getAction()
+            action, q = brain.getAction()
             print 'action:\n' + str(action.argmax())
             reward, throught, nextObservation = env.step(action)
             print 'reward: ' + str(reward) + ', throught: ' + str(throught)
             print 'Next observation:\n' + str(nextObservation)
+
+            data['timestamp'] = time.time()
+            data['rssi'] = nextObservation[-1]
+            data['q'] = q
+            data['reward'] = reward
+            data['action_index'] = np.argmax(q)
+            fig.append(data)
+
             brain.setPerception(nextObservation, action, reward, False)
     except KeyboardInterrupt:
         print 'Saving replayMemory......'
         brain.saveReplayMemory()
+        fig.stop()
     pass
 
 def test():
