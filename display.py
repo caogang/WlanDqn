@@ -82,30 +82,27 @@ class Display:
                 continue
 
             rssi_fig.cla()
-            rssi_fig.set_title(u"信号强度")
-            rssi_fig.set_ylabel("Rssi / dbm")
+            rssi_fig.set_title("Rssi / dBm")
             rssi_fig.set_ylim(-90, -20)
             rssi_fig.grid()
             for id, r in rssi.items():
                 rssi_fig.plot(t, np.array(r) - 255, label=self.id2ap[id])
 
             reward_fig.cla()
-            reward_fig.set_title(u"吞吐量")
-            reward_fig.set_ylabel("Throughtout / Mbps")
+            reward_fig.set_title("Throughtout / Mbps")
             reward_fig.set_ylim(0, 70)
             reward_fig.grid()
             reward_fig.plot(t, reward)
 
             action_fig.cla()
-            action_fig.set_title(u"分配的AP")
-            action_fig.set_xlabel(u"时间 / s")
+            action_fig.set_title("AP")
+            action_fig.set_xlabel("Time / s")
             action_fig.set_ylim(-1, 2)
             action_fig.plot(t, action)
 
             q_fig.cla()
-            q_fig.set_title(u"决策大脑估计的Q值")
-            q_fig.set_xlabel(u"时间 / s")
-            q_fig.set_ylabel("Future throughtout / Mbps")
+            q_fig.set_title("Q Value / Mbps")
+            q_fig.set_xlabel("Time / s")
             q_fig.set_ylim(100, 160)
             q_fig.grid()
             for id, q in q_value.items():
