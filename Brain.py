@@ -197,7 +197,9 @@ class BrainDQN:
     def setPerception(self, nextObservation, action, reward, terminal):
         # newState = np.append(nextObservation,self.currentState[:,:,1:],axis = 2)
 
-        self.replayMemory.append((self.currentState, action, reward, nextObservation, terminal))
+        if reward >= 38:   # FIXME: add this condition due to that the env is not perfect
+            self.replayMemory.append((self.currentState, action, reward, nextObservation, terminal))
+
         if len(self.replayMemory) > REPLAY_MEMORY:
             self.replayMemory.popleft()
         if self.timeStep > OBSERVE:
