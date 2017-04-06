@@ -1,6 +1,5 @@
 from env.wlanenvironment import wlanEnv
 from Brain import BrainDQN
-from display import display
 import time
 import numpy as np
 from display import Display
