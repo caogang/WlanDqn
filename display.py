@@ -87,6 +87,7 @@ class Display:
             rssi_fig.grid()
             for id, r in rssi.items():
                 rssi_fig.plot(t, np.array(r) - 255, label=self.id2ap[id])
+            rssi_fig.legend(loc='best')
 
             reward_fig.cla()
             reward_fig.set_title("Throughtout / Mbps")
@@ -107,6 +108,7 @@ class Display:
             q_fig.grid()
             for id, q in q_value.items():
                 q_fig.plot(t, q, label=self.id2ap[id])
+            q_fig.legend(loc='best')
 
             plt.pause(self.interval)
         pass
