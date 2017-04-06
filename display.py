@@ -64,27 +64,33 @@ class Display:
         action_fig = ax[1][0]
         q_fig = ax[1][1]
 
+        t = copy.copy(self.t)
+        q_value = copy.deepcopy(self.q_value)
+        rssi = copy.deepcopy(self.rssi)
+        reward = copy.copy(self.reward)
+        action = copy.copy(self.action)
+
         while not self.end:
-            if len(self.t) == 0:
+            if len(t) == 0:
                 time.sleep(self.interval)
                 continue
             rssi_fig.cla()
             rssi_fig.grid()
-            for r in self.rssi.values():
-                rssi_fig.plot((self.t), r)
+            for r in rssi.values():
+                rssi_fig.plot(t, r)
 
             reward_fig.cla()
             reward_fig.grid()
-            reward_fig.plot((self.t), self.reward)
+            reward_fig.plot(t, reward)
 
             action_fig.cla()
             action_fig.grid()
-            action_fig.plot((self.t), self.action)
+            action_fig.plot(t, action)
 
             q_fig.cla()
             q_fig.grid()
-            for q in self.q_value.values():
-                q_fig.plot((self.t), q)
+            for q in q_value.values():
+                q_fig.plot(t, q)
 
             plt.pause(self.interval)
         pass
