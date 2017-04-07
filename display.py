@@ -82,9 +82,13 @@ class Display:
             if len(t) != len(q_value[0]) or len(t) != len(rssi[0]) or len(t) != len(reward) or len(t) != len(action):
                 continue
 
+            max_t = t[-1] + 100
+            min_t = max_t - 900 if max_t - 900 > 0 else 0
+
             rssi_fig.cla()
             rssi_fig.set_title("Rssi / dBm")
             rssi_fig.set_ylim(-90, -20)
+            rssi_fig.set_xlim(min_t, max_t)
             rssi_fig.grid()
             for id, r in rssi.items():
                 rssi_fig.plot(t, np.array(r) - 255, label=self.id2ap[id])
@@ -93,6 +97,7 @@ class Display:
             reward_fig.cla()
             reward_fig.set_title("Throughtout / Mbps")
             reward_fig.set_ylim(0, 70)
+            reward_fig.set_xlim(min_t, max_t)
             reward_fig.grid()
             reward_fig.plot(t, reward)
 
@@ -102,6 +107,7 @@ class Display:
             action_fig.set_yticks([0, 1])
             action_fig.set_yticklabels([self.id2ap[i] for i in [0, 1]], rotation=30)
             action_fig.set_ylim(-1, 2)
+            action_fig.set_xlim(min_t, max_t)
             action_fig.grid()
             action_fig.plot(t, action)
 
@@ -109,6 +115,7 @@ class Display:
             q_fig.set_title("Q Value / Mbps")
             q_fig.set_xlabel("Time / s")
             q_fig.set_ylim(100, 160)
+            q_fig.set_xlim(min_t, max_t)
             q_fig.grid()
             for id, q in q_value.items():
                 q_fig.plot(t, q, label=self.id2ap[id])
