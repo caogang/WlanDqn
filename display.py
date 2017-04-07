@@ -99,7 +99,7 @@ class Display:
             action_fig.set_title("AP")
             action_fig.set_xlabel("Time / s")
             action_fig.set_yticks([0, 1])
-            action_fig.set_yticklabels(['192.188.0.252', '192.188.0.249'], rotation=30)
+            action_fig.set_yticklabels([self.id2ap[i] for i in [0, 1]], rotation=30)
             action_fig.set_ylim(-1, 2)
             action_fig.grid()
             action_fig.plot(t, action)
