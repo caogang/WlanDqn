@@ -4,6 +4,7 @@ import numpy as np
 import copy
 import time
 import threading
+import pickle
 
 class Display:
     def __init__(self, id2ap, REFRESH_INTERVAL=1):
@@ -115,7 +116,17 @@ class Display:
 
             plt.pause(self.interval)
 
-        plt.savefig('full.png')
+        save_data = {
+            't': self.t,
+            'rssi': self.rssi,
+            'q': self.q_value,
+            'reward': self.reward,
+            'action': self.action,
+            'id2ap': self.id2ap
+        }
+
+        output = open('fig.pkl', 'wb')
+        pickle.dump(save_data, output, -1)
         pass
 
     def display(self):
