@@ -4,6 +4,7 @@ import numpy as np
 import copy
 import time
 import threading
+import scipy.io as sio
 
 class Display:
     def __init__(self, id2ap, REFRESH_INTERVAL=1):
@@ -114,6 +115,19 @@ class Display:
             q_fig.legend(loc='best')
 
             plt.pause(self.interval)
+
+        data = {}
+        data['t'] = self.t
+        data['reward'] = self.reward
+        for id, r in self.rssi.items():
+            data[self.id2ap[id] + '_rssi'] = np.array(r) - 255
+
+        for id, q in self.q_value.items():
+            data[self.id2ap[id] + '_q'] = q
+
+        data['action'] = [self.id2ap[act] for act in self.action]
+
+        sio.savemat('data.mat', data)
         pass
 
     def display(self):
