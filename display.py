@@ -120,13 +120,13 @@ class Display:
         data['t'] = self.t
         data['reward'] = self.reward
 
-        matrix_rssi = np.array((len(self.rssi.keys()), len(self.t)))
+        matrix_rssi = np.array((len(self.t), len(self.rssi.keys())))
         for id, r in self.rssi.items():
             matrix_rssi[id, :] = r
         matrix_rssi[:] -= 255
         data['rssi'] = matrix_rssi
 
-        matrix_q = np.array((len(self.q_value.keys()), len(self.t)))
+        matrix_q = np.array((len(self.t), len(self.q_value.keys())))
         for id, q in self.q_value.items():
             matrix_q[id, :] = q
         data['q'] = matrix_q
