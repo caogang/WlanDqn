@@ -7,7 +7,7 @@ import time
 import math
 
 class wlanEnv:
-    def __init__(self, remoteControllerAddr, seqLen, timeInterval=0.1, additionalDim=0):
+    def __init__(self, remoteControllerAddr, seqLen, timeInterval=0.1, additionalDim=0, no_guarantee=False):
         self.remoteAddr = remoteControllerAddr
         self.numAp = 0
         self.seqLen = seqLen
@@ -16,6 +16,7 @@ class wlanEnv:
         self.end = False
         self.timeRewardMax = 5  # FIXME: let it be a parameter 5 10 20
         self.startTime = None
+        self.no_guarantee = no_guarantee
 
         self.macAddr = '68:3e:34:9b:34:05'
         rssiUrl = 'http://' + self.remoteAddr + "/dqn/rssi/json?mac=" + self.macAddr
@@ -139,7 +140,8 @@ class wlanEnv:
         actionId = action.argmax()
         if (self.additionalDim > 0 and actionId < self.numAp) or (self.additionalDim <= 0 and actionId != self.currentId):
             self.__handover(self.macAddr, self.id2ap[actionId])
-            sleep(self.timeInverval * self.seqLen)
+            if not self.no_guarantee:
+                sleep(self.timeInverval * self.seqLen)
             self.currentId = actionId
             self.startTime = time.time()
 

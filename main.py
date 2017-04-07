@@ -66,7 +66,7 @@ def train():
     pass
 
 def test():
-    env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL)
+    env = wlanEnv(CONTROLLER_IP, BUFFER_LEN, timeInterval=ENV_REFRESH_INTERVAL, no_guarantee=True)
     env.start()
 
     numAPs, numActions, numAdditionDim = env.getDimSpace()
