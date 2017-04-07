@@ -119,13 +119,20 @@ class Display:
         data = {}
         data['t'] = self.t
         data['reward'] = self.reward
+
+        matrix_rssi = np.array((len(self.rssi.keys()), len(self.t)))
         for id, r in self.rssi.items():
-            data[self.id2ap[id] + '_rssi'] = np.array(r) - 255
+            matrix_rssi[id, :] = r
+        matrix_rssi[:] -= 255
+        data['rssi'] = matrix_rssi
 
+        matrix_q = np.array((len(self.q_value.keys()), len(self.t)))
         for id, q in self.q_value.items():
-            data[self.id2ap[id] + '_q'] = q
+            matrix_q[id, :] = q
+        data['q'] = matrix_q
 
-        data['action'] = [self.id2ap[act] for act in self.action]
+        data['action'] = self.action
+        data['id2ap'] = self.id2ap
 
         sio.savemat('data.mat', data)
         pass
