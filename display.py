@@ -4,7 +4,6 @@ import numpy as np
 import copy
 import time
 import threading
-import scipy.io as sio
 
 class Display:
     def __init__(self, id2ap, REFRESH_INTERVAL=1):
@@ -116,18 +115,7 @@ class Display:
 
             plt.pause(self.interval)
 
-        data = {}
-        data['t'] = self.t
-        data['reward'] = self.reward
-
-        data['rssi'] = self.rssi
-
-        data['q'] = self.q_value
-
-        data['action'] = self.action
-        data['id2ap'] = self.id2ap
-
-        sio.savemat('data.mat', data)
+        plt.savefig('full.png')
         pass
 
     def display(self):
