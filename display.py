@@ -98,7 +98,10 @@ class Display:
             action_fig.cla()
             action_fig.set_title("AP")
             action_fig.set_xlabel("Time / s")
+            action_fig.set_xticks([0, 1])
+            action_fig.set_xticklabels([self.id2ap[i] for in [0, 1]], rotation=30)
             action_fig.set_ylim(-1, 2)
+            action_fig.grid()
             action_fig.plot(t, action)
 
             q_fig.cla()
