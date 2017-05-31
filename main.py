@@ -5,7 +5,7 @@ import numpy as np
 from display import Display
 # import signal
 
-CONTROLLER_IP = '10.103.12.166:8080'
+CONTROLLER_IP = '10.103.43.130:8080'
 BUFFER_LEN = 60
 ENV_REFRESH_INTERVAL = 0.1
 
@@ -96,7 +96,7 @@ def test():
             data['action_index'] = action_index
             fig.append(data)
             print 'Next observation:\n' + str(observation)
-            time.sleep(1)
+            time.sleep(2)
     except KeyboardInterrupt:
         fig.stop()
 
