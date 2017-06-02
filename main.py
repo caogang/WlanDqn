@@ -80,11 +80,11 @@ def test():
     np.set_printoptions(threshold=5)
 
     data = {}
-    fig = Display(env.id2ap)
+    fig = Display(env.id2ap, PREDICT=True)
     fig.display()
     try:
         while True:
-            action, q_value, action_index = brain.predict(observation)
+            action, q_value, action_index, feature_vector = brain.predict(observation)
             print 'action:\n' + str(action_index)
             reward, throught, observation = env.step(action)
             print 'q_value: ' + str(q_value)
@@ -94,6 +94,7 @@ def test():
             data['q'] = q_value
             data['reward'] = reward
             data['action_index'] = action_index
+            data['feature_vector'] = feature_vector
             fig.append(data)
             print 'Next observation:\n' + str(observation)
             time.sleep(2)

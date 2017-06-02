@@ -77,7 +77,7 @@ class BrainDQN:
         loss = mx.sym.MakeLoss(output)
 
         if predict:
-            return Qvalue
+            return mx.sym.Group([Qvalue, pred])
         else:
             return loss
 
@@ -267,11 +267,12 @@ class BrainDQN:
                 mx.io.DataBatch([mx.nd.array(observation.reshape(1, self.seqLen, self.numAps), ctx)],
                                 []))
         QValue = np.squeeze(self.target.get_outputs()[0].asnumpy())
+        feature_vector = np.squeeze(self.target.get_outputs()[1].asnumpy())
         action = np.zeros(self.numActions)
         action_index = np.argmax(QValue)
         action[action_index] = 1
 
-        return action, QValue, action_index
+        return action, QValue, action_index, feature_vector
 
     def saveReplayMemory(self):
         print 'Memory Size: ' + str(len(self.replayMemory))

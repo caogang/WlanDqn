@@ -7,13 +7,16 @@ import threading
 import pickle
 
 class Display:
-    def __init__(self, id2ap, REFRESH_INTERVAL=1):
+    def __init__(self, id2ap, REFRESH_INTERVAL=1, PREDICT=False):
         self.t_begin = None
+        self.predict = PREDICT
         self.t = []
         self.rssi = {}
         self.action = []
         self.reward = []
         self.q_value = {}
+        if self.predict:
+            self.feature_vector = []
 
         self.end = False
         self.threads = []
@@ -25,7 +28,7 @@ class Display:
         """
         Pass a dict to display which is in a specific format
         :param data:
-        {'timestamp' : int, 'rssi' : np.array(numAps), 'q' : np.array(numAps), 'action_index' : int, 'reward' : int}
+        {'timestamp' : int, 'rssi' : np.array(numAps), 'q' : np.array(numAps), 'action_index' : int, 'reward' : int, 'feature_vector' : np.array(hidden_size) }
         :return:
         """
         t = copy.copy(self.t)
@@ -33,6 +36,8 @@ class Display:
         rssi = copy.deepcopy(self.rssi)
         reward = copy.copy(self.reward)
         action = copy.copy(self.action)
+        if self.predict:
+            feature_vector = copy.copy(self.feature_vector)
 
         if len(t) == 0:
             self.t_begin = data['timestamp']
@@ -42,6 +47,8 @@ class Display:
 
         reward.append(data['reward'])
         action.append(data['action_index'])
+        if self.predict:
+            feature_vector.append(data['feature_vector'])
 
         for ap, r in enumerate(data['rssi']):
             if ap not in rssi.keys():
@@ -58,6 +65,8 @@ class Display:
         self.rssi = copy.deepcopy(rssi)
         self.reward = copy.copy(reward)
         self.action = copy.copy(action)
+        if self.predict:
+            self.feature_vector = copy.copy(feature_vector)
 
     def _plot(self):
 
@@ -66,6 +75,8 @@ class Display:
         reward_fig = ax[0][1]
         action_fig = ax[1][0]
         q_fig = ax[1][1]
+        fig_tp = plt.figure()
+	ax_feature_vector = fig_tp.add_subplot(111)
 
         while not self.end:
 
@@ -74,6 +85,11 @@ class Display:
             rssi = copy.deepcopy(self.rssi)
             reward = copy.copy(self.reward)
             action = copy.copy(self.action)
+            if self.predict:
+                feature_vector = copy.copy(self.feature_vector)
+                feature_vector = np.array(feature_vector)
+                feature_vector = feature_vector.transpose((1,0))
+                print feature_vector.shape
 
             if len(t) == 0:
                 time.sleep(self.interval)
@@ -121,16 +137,29 @@ class Display:
                 q_fig.plot(t, q, label=self.id2ap[id])
             q_fig.legend(loc='best')
 
+            #ax_feature_vector.imshow(feature_vector)
+
             plt.pause(self.interval)
 
-        save_data = {
-            't': self.t,
-            'rssi': self.rssi,
-            'q': self.q_value,
-            'reward': self.reward,
-            'action': self.action,
-            'id2ap': self.id2ap
-        }
+        if self.predict:
+            save_data = {
+                't': self.t,
+                'rssi': self.rssi,
+                'q': self.q_value,
+                'reward': self.reward,
+                'action': self.action,
+                'id2ap': self.id2ap,
+                'feature_vector': self.feature_vector
+            }
+        else:
+            save_data = {
+                't': self.t,
+                'rssi': self.rssi,
+                'q': self.q_value,
+                'reward': self.reward,
+                'action': self.action,
+                'id2ap': self.id2ap,
+            }
 
         output = open('fig.pkl', 'wb')
         pickle.dump(save_data, output, -1)
